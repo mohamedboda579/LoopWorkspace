@@ -144,8 +144,12 @@ public class LinxCGMManager: CGMManager {
 
     private let delegate = WeakSynchronizedDelegate<CGMManagerDelegate>()
 
-    /// We scan over BLE → we provide the "heartbeat" to Loop.
-    public var providesBLEHeartbeat: Bool = true
+    /// Passive advertisement scanning cannot reliably wake Loop in the background
+    /// (iOS coalesces/throttles advertisements once the app is suspended). So we
+    /// do NOT claim to provide the heartbeat: Loop then asks the pump (e.g. Omnipod
+    /// DASH) to wake the app, and each heartbeat calls `fetchNewDataIfNeeded`,
+    /// which restarts the scan so the next advertisement is delivered.
+    public var providesBLEHeartbeat: Bool { false }
 
     public var managedDataInterval: TimeInterval? { 3 * 60 * 60 } // 3 hours in seconds
 
