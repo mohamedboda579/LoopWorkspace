@@ -672,9 +672,9 @@ extension LinxCGMManager: LinxScannerDelegate {
         if isNew || rssiChanged {
             let snapshot = nearbyDevices
             let observers = stateObservers
-            delegateQueue?.async {
-                observers.forEach { $0.linxNearbyDevicesDidUpdate(snapshot) }
-            }
+            // Observers hop to the main queue themselves; do not depend on Loop's
+            // delegateQueue, which may not be set yet during onboarding.
+            observers.forEach { $0.linxNearbyDevicesDidUpdate(snapshot) }
         }
     }
 

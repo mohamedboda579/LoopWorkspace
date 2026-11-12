@@ -168,7 +168,10 @@ public final class LinxScanner: NSObject {
         guard !isScanning else { return }
         // In background AllowDuplicatesKey: true — against iOS throttling we get every
         // advertisement callback; the five-minute gate filters Loop output.
-        let allowDuplicates = isAppInBackground
+        // Always allow duplicates: without it iOS reports each sensor about once
+        // per scan session, so a first advertisement that arrives without its
+        // name (or a later glucose packet) is never delivered again.
+        let allowDuplicates = true
         central.scanForPeripherals(
             withServices: [Self.linxServiceUUID],
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: allowDuplicates]
@@ -260,6 +263,21 @@ public final class LinxScanner: NSObject {
         guard !n.isEmpty, !s.isEmpty else { return false }
         if n == s { return true }
         return s.count >= 8 && n.hasSuffix("-" + s)
+    }
+
+    /// Diagnostics: a device advertising service 181F that is not in the expected
+    /// LinX packet format. Shown in the settings screen's scanner status so we
+    /// can tell "no sensor in range" from "sensor uses a different format".
+    private var lastNonMatchingReport: [UUID: Date] = [:]
+
+    private func reportNonMatchingDevice(peripheral: CBPeripheral, advName: String, detail: String) {
+        let now = Date()
+        if let last = lastNonMatchingReport[peripheral.identifier], now.timeIntervalSince(last) < 20 {
+            return
+        }
+        lastNonMatchingReport[peripheral.identifier] = now
+        let name = advName.isEmpty ? "(sin nombre)" : advName
+        notify("181F seen: \(name) — \(detail) — not LinX format")
     }
 
     private func notify(_ s: String) {
@@ -369,6 +387,7 @@ extension LinxScanner: CBCentralManagerDelegate {
 
         // Read manufacturer data
         guard let mfg = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data else {
+            reportNonMatchingDevice(peripheral: peripheral, advName: advName, detail: "no manufacturer data")
             return
         }
 
@@ -378,7 +397,14 @@ extension LinxScanner: CBCentralManagerDelegate {
             : 0
 
         // Safety filter: Nordic (0x0059) 27-byte Linx packet only.
-        guard mfgID == expectedManufacturerID, bytes.count == 27 else { return }
+        guard mfgID == expectedManufacturerID, bytes.count == 27 else {
+            reportNonMatchingDevice(
+                peripheral: peripheral,
+                advName: advName,
+                detail: String(format: "mfg id 0x%04X, %d bytes", mfgID, bytes.count)
+            )
+            return
+        }
         lastAdvertisementAt = Date()
 
         // The radio signature above identifies compatible Linx hardware more
