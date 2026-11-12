@@ -280,6 +280,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E50F54495F8202A04F726438"
+               BuildableName = "LinxCGMPlugin.loopplugin"
+               BlueprintName = "LinxCGMPlugin"
+               ReferencedContainer = "container:LinxCGMKit/LinxCGMKit.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "C17F511C291EACCD00555EB5"
                BuildableName = "G7SensorPlugin.loopplugin"
                BlueprintName = "G7SensorPlugin"

@@ -1,0 +1,102 @@
+name: LinxCGMKit
+options:
+  bundleIdPrefix: org.loopkit
+  deploymentTarget:
+    iOS: "15.1"
+  createIntermediateGroups: true
+  defaultConfig: Release
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  # ---------- Kit framework (core logic) ----------
+  LinxCGMKit:
+    type: framework
+    platform: iOS
+    sources:
+      - path: LinxCGMKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.loopkit.LinxCGMKit
+        DEFINES_MODULE: "YES"
+        GENERATE_INFOPLIST_FILE: "YES"
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0"
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/Frameworks"
+          - "@loader_path/Frameworks"
+    dependencies:
+      - framework: LoopKit.framework
+        embed: false
+        codeSign: false
+
+  # ---------- KitUI framework (SwiftUI settings/setup) ----------
+  LinxCGMKitUI:
+    type: framework
+    platform: iOS
+    sources:
+      - path: LinxCGMKitUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.loopkit.LinxCGMKitUI
+        DEFINES_MODULE: "YES"
+        GENERATE_INFOPLIST_FILE: "YES"
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0"
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/Frameworks"
+          - "@loader_path/Frameworks"
+    dependencies:
+      - target: LinxCGMKit
+        embed: false
+        codeSign: false
+      - framework: LoopKit.framework
+        embed: false
+        codeSign: false
+      - framework: LoopKitUI.framework
+        embed: false
+        codeSign: false
+
+  # ---------- Plugin bundle (.loopplugin) ----------
+  LinxCGMPlugin:
+    type: framework
+    platform: iOS
+    sources:
+      - path: LinxCGMPlugin
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.loopkit.LinxCGMPlugin
+        WRAPPER_EXTENSION: loopplugin
+        INFOPLIST_FILE: LinxCGMPlugin/Info.plist
+        GENERATE_INFOPLIST_FILE: "NO"
+        DEFINES_MODULE: "NO"
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/Frameworks"
+          - "@loader_path/Frameworks"
+    dependencies:
+      - target: LinxCGMKit
+        embed: true
+        codeSign: true
+      - target: LinxCGMKitUI
+        embed: true
+        codeSign: true
+      - framework: LoopKit.framework
+        embed: false
+        codeSign: false
+      - framework: LoopKitUI.framework
+        embed: false
+        codeSign: false
