@@ -23,6 +23,8 @@ class LinxSettingsViewModel: ObservableObject, LinxStateObserver {
     /// Feedback for the last calibration attempt (nil = nothing to show).
     @Published var calibrationMessage: String?
     @Published var calibrationMessageIsError = false
+    /// Confirmation shown after saving/selecting the sensor serial.
+    @Published var serialSavedMessage: String?
 
     init(cgmManager: LinxCGMManager, displayGlucosePreference: DisplayGlucosePreference) {
         self.cgmManager = cgmManager
@@ -106,7 +108,12 @@ class LinxSettingsViewModel: ObservableObject, LinxStateObserver {
     // MARK: - Actions
 
     func saveSerial() {
-        cgmManager.setSensorSerial(sensorSerial.trimmingCharacters(in: .whitespaces))
+        let serial = sensorSerial.trimmingCharacters(in: .whitespacesAndNewlines)
+        sensorSerial = serial
+        cgmManager.setSensorSerial(serial)
+        serialSavedMessage = serial.isEmpty
+            ? "Sensor borrado: no se enviarán lecturas a Loop."
+            : "Guardado: \(serial). Esperando lecturas de este sensor…"
     }
 
     /// Persist the sensor chosen from the picker list: we only filter to it,
@@ -115,6 +122,7 @@ class LinxSettingsViewModel: ObservableObject, LinxStateObserver {
     func selectDevice(_ device: LinxNearbyDevice) {
         sensorSerial = device.name
         cgmManager.setSensorSerial(device.name)
+        serialSavedMessage = "Guardado: \(device.name). Esperando lecturas de este sensor…"
     }
 
     /// Called when opening settings: starts scanning and loads the currently

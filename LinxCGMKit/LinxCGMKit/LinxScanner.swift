@@ -64,6 +64,15 @@ public final class LinxScanner: NSObject {
     /// anonymous packet from an unknown sensor.
     private var confirmedPeripherals: [UUID: String] = [:]
     private var lastNoSerialNotice: Date?
+    private var lastFilterNotice: Date?
+
+    /// Throttled status message explaining what the serial filter did.
+    private func filterNotice(_ message: String) {
+        let now = Date()
+        if let last = lastFilterNotice, now.timeIntervalSince(last) < 10 { return }
+        lastFilterNotice = now
+        notify(message)
+    }
     private var gattPeripheral: CBPeripheral?
     private var gattConnectionPending = false
     private var gattNotificationsActive = false
@@ -434,16 +443,20 @@ extension LinxScanner: CBCentralManagerDelegate {
         if !advName.isEmpty {
             if Self.advertisedName(advName, matchesSerial: wanted) {
                 confirmedPeripherals[peripheral.identifier] = wanted.lowercased()
+                filterNotice("Receiving from \(advName)")
             } else {
                 confirmedPeripherals[peripheral.identifier] = nil
+                filterNotice("Ignored: \(advName) is not the selected sensor (\(wanted))")
                 return
             }
         } else {
             // Nameless packet: accept only from a peripheral previously confirmed
             // by name for the *currently* selected serial.
             guard confirmedPeripherals[peripheral.identifier] == wanted.lowercased() else {
+                filterNotice("Ignored: LinX packet without name (sensor not confirmed yet)")
                 return
             }
+            filterNotice("Receiving (nameless packet from confirmed sensor)")
         }
 
         startDiaExpertGATTIfNeeded(

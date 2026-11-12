@@ -80,6 +80,11 @@ struct LinxSettingsView: View {
             Button("Guardar número de serie") {
                 viewModel.saveSerial()
             }
+            if let message = viewModel.serialSavedMessage {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundColor(.green)
+            }
         }
     }
 
