@@ -1,0 +1,42 @@
+diff --git a/Loop/Loop Widget Extension/Live Activity/GlucoseLiveActivityConfiguration.swift b/Loop/Loop Widget Extension/Live Activity/GlucoseLiveActivityConfiguration.swift
+index b288c71..e181975 100644
+--- a/Loop/Loop Widget Extension/Live Activity/GlucoseLiveActivityConfiguration.swift	
++++ b/Loop/Loop Widget Extension/Live Activity/GlucoseLiveActivityConfiguration.swift	
+@@ -179,12 +179,23 @@ struct GlucoseLiveActivityConfiguration: Widget {
+                     Spacer()
+                     HStack {
+                         Spacer()
+-                        Text(
+-                            NSLocalizedString(
+-                                "Open the app to update the widget",
+-                                comment: "No comment"
+-                            )
+-                        )
++                        Link(destination: URL(string: "loop://manual-bolus")!) {
++                            HStack(spacing: 8) {
++                                Image("bolus")
++                                    .foregroundColor(Color("insulin"))
++                                Text(
++                                    NSLocalizedString(
++                                        "Bolus",
++                                        comment: "Live activity button that opens the bolus screen"
++                                    )
++                                )
++                                .font(.headline)
++                            }
++                            .padding(.horizontal, 20)
++                            .padding(.vertical, 10)
++                            .background(Color.black.opacity(0.35))
++                            .clipShape(Capsule())
++                        }
+                         Spacer()
+                     }
+                     Spacer()
+@@ -197,6 +208,7 @@ struct GlucoseLiveActivityConfiguration: Widget {
+         .padding(.all, 15)
+         .background(BackgroundStyle.background.opacity(0.4))
+         .activityBackgroundTint(Color.clear)
++        .widgetURL(URL(string: "loop://manual-bolus"))
+     }
+ 
+     @ViewBuilder
